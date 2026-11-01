@@ -854,6 +854,7 @@ export function init(seedWord, { runTicks = BLOCK_TICKS } = {}) {
   // Sized once for every armour slot there can be. Filled from the core's own
   // units at the top of each step; see `fillArmour`.
   st.armour = { n: 0, xz: new Int32Array(Math.imul(UNITS >> 2, 2)), h: new Int32Array(UNITS >> 2) };
+  st.hulks = { n: 0, xz: new Int32Array(Math.imul(UNITS >> 2, 2)), h: new Int32Array(UNITS >> 2) };   // the dead tanks, see `fillArmour`
 
   // The squad anchors first, because a rifleman is put ON his post when he
   // spawns and cannot be if the post does not exist yet. C# reaches the same
@@ -1337,11 +1338,19 @@ const nextBelow = below;
 function fillArmour(st) {
   const s = st.i32;
   const xz = st.armour.xz, hh = st.armour.h;
-  let n = 0;
+  let n = 0, w = 0;
   for (let i = 0; i < UNITS; i++) {
     if (!isArmour(i)) continue;
     const b = unitBase(i);
-    if (s[b + U_STATE] === 0) continue;
+    // A WRECK IS SOLID (kanban #962, the owner 2026-11-01): a dead tank keeps the x, z and heading it died on until its id respawns, so the
+    // hulk is state like any other, identical on every node. The truck is pushed out of it, and it does not write the truck off: that is live armour's.
+    if (s[b + U_STATE] === 0) {
+      st.hulks.xz[Math.imul(w, 2)] = s[b + U_X];
+      st.hulks.xz[Math.imul(w, 2) + 1] = s[b + U_Z];
+      st.hulks.h[w] = s[b + U_HEADING];
+      w++;
+      continue;
+    }
     xz[Math.imul(n, 2)] = s[b + U_X];
     xz[Math.imul(n, 2) + 1] = s[b + U_Z];
     // THE HULL IS A HULL, NOT A DISC (§1.2, 2026-09-19): the contact test needs the way the tank faces, because a
@@ -1350,6 +1359,7 @@ function fillArmour(st) {
     n++;
   }
   st.armour.n = n;
+  st.hulks.n = w;
 }
 
 export function step(st, throttle, steer, brake, handbrake, practice) {
@@ -1456,6 +1466,7 @@ export function step(st, throttle, steer, brake, handbrake, practice) {
   v.fx = sin(v.heading); v.fz = cos(v.heading);
   v.impact = 0;
   const touchedArmour = resolveArmour(v, st.armour.xz, st.armour.n, st.armour.h);
+  resolveArmour(v, st.hulks.xz, st.hulks.n, st.hulks.h);         // a wreck stops the truck and leaves it alive (kanban #962)
 
   // The hardest armour impact this tick, for whatever applies damage.
   if (v.impact > s[T + T_IMPACT]) s[T + T_IMPACT] = v.impact;
