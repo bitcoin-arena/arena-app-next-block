@@ -10,7 +10,7 @@
 //
 //     node tools/publish-webgl.mjs <DXT output> <ASTC output> <out dir> [--release]
 //
-// --release attaches the folder to a GitHub release of a tester/arena-app-next-block, tagged webgl-nextblock-<version> (gh; one asset per
+// --release attaches the folder to a GitHub release of bitcoinarena/arena-app-next-block, tagged webgl-nextblock-<version> (gh; one asset per
 // file, its path in the name with "/" as "__", and webgl.json).
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, copyFileSync, existsSync, rmSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -20,7 +20,7 @@ import { execFileSync } from 'node:child_process';
 
 const [dxt, astc, out, ...flags] = process.argv.slice(2);
 if (!dxt || !astc || !out) { console.error('usage: publish-webgl.mjs <DXT output> <ASTC output> <out dir> [--release]'); process.exit(2); }
-const REPO = 'a tester/arena-app-next-block';
+const REPO = 'bitcoinarena/arena-app-next-block';
 const walk = (d) => readdirSync(d).flatMap((n) => { const p = join(d, n); return statSync(p).isDirectory() ? walk(p) : [p]; });
 const sha = (b) => createHash('sha256').update(b).digest('hex');
 const copy = (from, to) => { mkdirSync(dirname(to), { recursive: true }); copyFileSync(from, to); };
