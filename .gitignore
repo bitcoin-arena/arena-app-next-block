@@ -5,3 +5,6 @@ unity/Logs/
 unity/UserSettings/
 unity/obj/
 unity/build/
+.env
+.env.*
+!.env.example
