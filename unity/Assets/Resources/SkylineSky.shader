@@ -33,9 +33,9 @@ Shader "Arena/SkylineSky"
                 float2 p = d.xz / below * _GridScale;
                 float2 w = fwidth(p) + 0.0001;
                 float2 g = abs(frac(p - 0.5) - 0.5) / w;
-                float line = (1.0 - saturate(min(g.x, g.y))) * saturate(below * 7.0);
+                float lit = (1.0 - saturate(min(g.x, g.y))) * saturate(below * 7.0);
                 float3 ground = lerp(float3(0.106, 0.051, 0.110), float3(0.059, 0.031, 0.071), saturate(below * 2.0));
-                ground = lerp(ground, float3(1.0, 0.54, 0.24), line * 0.65);
+                ground = lerp(ground, float3(1.0, 0.54, 0.24), lit * 0.65);
                 ground += float3(0.55, 0.20, 0.10) * exp(-below * 16.0);
                 return fixed4(d.y >= 0.0 ? sky : ground, 1.0);
             }
