@@ -14,9 +14,20 @@ public static class CleanHud
 {
     public static bool On { get; private set; }
 
+    static bool _asked;
+
+    /// <summary>?hud=0 on the page's address starts with the clean screen, for camera shots on a device with no keyboard (kanban #955).</summary>
+    public static void FromQuery(string hud)
+    {
+        if (hud != "0") return;
+        On = true;
+        Arena.DailyLobby.HudClean(true);
+    }
+
     /// <summary>Called once a frame by DriveHud.Update.</summary>
     public static void Poll()
     {
+        if (!_asked) { _asked = true; FromQuery(Arena.ArenaCore.QueryParam("hud")); }
 #if ENABLE_INPUT_SYSTEM
         var k = UnityEngine.InputSystem.Keyboard.current;
         if (k == null || !k.hKey.wasPressedThisFrame || !k.shiftKey.isPressed) return;

@@ -41,6 +41,19 @@ public class CleanHudTests : InputTestFixture
     }
 
     [Test]
+    public void TheHiddenParameterStartsCleanAndNothingElseDoes()
+    {
+        bool was = CleanHud.On;
+        CleanHud.FromQuery(null);
+        CleanHud.FromQuery("1");
+        Assert.AreEqual(was, CleanHud.On, "only hud=0 starts clean");
+        CleanHud.FromQuery("0");
+        Assert.IsTrue(CleanHud.On, "hud=0 did not start clean");
+        if (!was) { Frame(Key.LeftShift, Key.H); Frame(); }
+        Assert.AreEqual(was, CleanHud.On, "Shift+H does not turn it off again");
+    }
+
+    [Test]
     public void HAloneShiftAloneAndAHeldKeyDoNotToggleIt()
     {
         bool was = CleanHud.On;
